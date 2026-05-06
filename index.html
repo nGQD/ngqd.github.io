@@ -1305,152 +1305,81 @@ body::after {
 
 
   function drawBlackHole(step) {
-    // Requires bh.x, bh.y, bh.r, bhTime, and an orbiters array.
     const cx = bh.x, cy = bh.y;
-    
-    // Slow, realistic tilt oscillation (simulating a changing viewing angle over time)
-    const tilt = 0.15 + Math.sin(bhTime * 0.02) * 0.08;
-    const spin = bhTime * 0.5;
-
-    // Visual boundary representations based on the Schwarzschild radius (r_s)
-    const r_s = bh.r; 
-    const isco = r_s * 2.5; // Innermost Stable Circular Orbit approximation
+    const r = bh.r;
+    const tilt = 0.22 + Math.sin(bhTime * 0.03) * 0.015;
+    const spin = bhTime * 0.12;
 
     x.save();
-    // 65% opacity ensures text behind or in front remains entirely readable
-    x.globalAlpha = 0.65; 
+    x.globalAlpha = 0.5;
 
-    // ==========================================
-    // 1. PARTICLE PHYSICS (Pseudo-Relativistic)
-    // ==========================================
-    orbiters.forEach(o => {
-      // Gravitational acceleration approximation: a = GM/r^2
-      const gm = r_s * r_s * 60; 
-      const distSq = o.r * o.r;
-      const g = gm / distSq;
+    // Lensed upper ring
+    x.save();
+    x.translate(cx, cy - r * 0.22);
+    x.rotate(tilt * 0.6);
+    x.scale(2.4, 0.18);
+    x.globalCompositeOperation = 'screen';
+    const lens = x.createRadialGradient(0, 0, r * 0.9, 0, 0, r * 2.4);
+    lens.addColorStop(0, 'rgba(255,255,245,0)');
+    lens.addColorStop(0.4, 'rgba(255,235,200,0.6)');
+    lens.addColorStop(0.75, 'rgba(255,215,160,0.25)');
+    lens.addColorStop(1, 'rgba(255,215,160,0)');
+    x.strokeStyle = lens;
+    x.lineWidth = r * 0.55;
+    x.beginPath(); x.arc(0, 0, r * 2.1, 0, Math.PI * 2); x.stroke();
+    x.restore();
 
-      // Update radial velocity
-      o.rv -= g * 0.001 * step; 
-      o.r += o.rv * step;
-      
-      // Keplerian angular velocity with simulated frame-dragging
-      const frameDragging = (isco / o.r) * 0.02;
-      o.a += (Math.sqrt(gm / o.r) * 0.002 + frameDragging) * step;
-
-      // Relativistic decay: if a particle passes the ISCO, it spirals into the shadow
-      if (o.r < isco) {
-        o.rv -= 0.8 * step; 
-      }
-      
-      // Respawn particles that fall into the event horizon or drift too far
-      if (o.r < r_s || o.r > r_s * 7) {
-        o.r = r_s * (3.5 + Math.random() * 3.5); 
-        o.rv = 0; 
-        o.a = Math.random() * Math.PI * 2; 
-      }
-
-      // Relativistic Doppler Beaming for particles
-      // Particles moving left-to-right (towards observer) are brighter
-      const projectedVelocityX = -Math.sin(o.a);
-      const dopplerFactor = 1 + projectedVelocityX * 0.85; 
-      
-      // Elliptical projection for the flat disk perspective
-      const ox = cx + Math.cos(o.a) * o.r;
-      const oy = cy + Math.sin(o.a) * o.r * Math.sin(tilt);
-      
-      const streakX = -Math.sin(o.a) * (Math.sqrt(gm / o.r) * 0.08);
-      const streakY = Math.cos(o.a) * (Math.sqrt(gm / o.r) * 0.08) * Math.sin(tilt);
-      
-      // Apply Doppler brightness to particle opacity
-      const opacity = Math.max(0.05, Math.min(1, o.op * dopplerFactor));
-      x.strokeStyle = `rgba(255, 240, 220, ${opacity})`;
-      x.lineWidth = o.h || 1;
-      x.beginPath();
-      x.moveTo(ox, oy);
-      x.lineTo(ox + streakX * step, oy + streakY * step);
-      x.stroke();
-    });
-
+    // Main accretion disk with Doppler beaming
+    x.save();
     x.translate(cx, cy);
+    x.rotate(tilt);
+    x.scale(2.2, 0.22);
+    x.globalCompositeOperation = 'screen';
+    const doppler = x.createLinearGradient(-r * 3, 0, r * 3, 0);
+    doppler.addColorStop(0, 'rgba(255,255,255,0.9)');
+    doppler.addColorStop(0.35, 'rgba(255,240,220,0.8)');
+    doppler.addColorStop(0.65, 'rgba(255,220,170,0.35)');
+    doppler.addColorStop(1, 'rgba(255,210,160,0.12)');
+    x.strokeStyle = doppler;
+    x.lineWidth = r * 0.45;
+    x.beginPath(); x.arc(0, 0, r * 2.05, 0, Math.PI * 2); x.stroke();
 
-    // ==========================================
-    // 2. GRAVITATIONAL LENSING (Top & Bottom Halos)
-    // ==========================================
-    // This represents the light from the back of the disk bending over the black hole
-    x.save();
-    x.scale(1, 1.3); // Spherical distortion
-    x.beginPath();
-    x.arc(0, 0, r_s * 1.6, 0, Math.PI * 2);
-    x.lineWidth = r_s * 0.9;
-    
-    const lensedGrad = x.createRadialGradient(0, 0, r_s * 1.1, 0, 0, r_s * 2.1);
-    lensedGrad.addColorStop(0, 'rgba(255, 230, 180, 0.85)');
-    lensedGrad.addColorStop(0.4, 'rgba(255, 180, 100, 0.4)');
-    lensedGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    x.strokeStyle = lensedGrad;
-    x.stroke();
+    x.strokeStyle = 'rgba(255,250,240,0.25)';
+    x.lineWidth = 1;
+    for (let i = 0; i < 80; i++) {
+      const a = (i / 80) * Math.PI * 2 + spin;
+      const rr = r * 2.05 + Math.sin(a * 3) * r * 0.06;
+      const sx = Math.cos(a) * rr;
+      const sy = Math.sin(a) * rr;
+      const tx = -Math.sin(a);
+      const ty = Math.cos(a);
+      x.beginPath();
+      x.moveTo(sx, sy);
+      x.lineTo(sx + tx * 12, sy + ty * 12);
+      x.stroke();
+    }
     x.restore();
 
-    // ==========================================
-    // 3. THE SHADOW & PHOTON RING
-    // ==========================================
-    // Clear the center to represent the actual void of the shadow
-    x.globalCompositeOperation = 'destination-out';
-    x.beginPath();
-    x.arc(0, 0, r_s, 0, Math.PI * 2);
-    x.fillStyle = `rgba(0, 0, 0, 0.9)`; 
-    x.fill();
     x.globalCompositeOperation = 'source-over';
-    
-    // Deep shadow fill
-    x.beginPath();
-    x.arc(0, 0, r_s, 0, Math.PI * 2);
-    x.fillStyle = 'rgba(2, 2, 5, 0.9)';
-    x.fill();
+    x.fillStyle = 'rgba(0,0,0,0.92)';
+    x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
 
-    // Photon Ring (Light trapped in circular orbit before escaping)
-    x.beginPath();
-    x.arc(0, 0, r_s * 1.03, 0, Math.PI * 2);
-    x.lineWidth = r_s * 0.06;
-    x.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-    x.stroke();
-
-    // ==========================================
-    // 4. ACCRETION DISK & DOPPLER BEAMING
-    // ==========================================
+    // Photon ring glow
     x.save();
-    x.rotate(-tilt * 0.3); 
-    x.scale(1, Math.sin(tilt)); // Flatten the foreground disk
-    
-    // Base radial structure of the accretion disk
-    x.beginPath();
-    x.arc(0, 0, r_s * 3.8, 0, Math.PI * 2);
-    x.lineWidth = r_s * 1.8;
-    
-    const diskRadial = x.createRadialGradient(0, 0, r_s * 1.4, 0, 0, r_s * 4.7);
-    diskRadial.addColorStop(0, 'rgba(255, 255, 255, 0)');    // Gap between ISCO and Event Horizon
-    diskRadial.addColorStop(0.1, 'rgba(255, 255, 255, 1)');  // Intensely hot inner edge
-    diskRadial.addColorStop(0.4, 'rgba(255, 210, 120, 0.8)');// Mid-disk cooling
-    diskRadial.addColorStop(1, 'rgba(80, 30, 10, 0)');       // Outer fade
-    x.strokeStyle = diskRadial;
-    x.stroke();
+    x.globalCompositeOperation = 'screen';
+    const ring = x.createRadialGradient(cx, cy, r * 0.95, cx, cy, r * 1.7);
+    ring.addColorStop(0, 'rgba(255,255,255,0)');
+    ring.addColorStop(0.25, 'rgba(255,255,255,0.95)');
+    ring.addColorStop(0.6, 'rgba(255,235,200,0.5)');
+    ring.addColorStop(1, 'rgba(255,235,200,0)');
+    x.fillStyle = ring;
+    x.beginPath(); x.arc(cx, cy, r * 1.7, 0, Math.PI * 2); x.fill();
 
-    // Apply the Relativistic Doppler Beaming (Blueshift/Redshift luminosity gradient)
-    const dopplerGrad = x.createLinearGradient(-r_s * 4, 0, r_s * 4, 0);
-    dopplerGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');     // Approaching side (Brightest)
-    dopplerGrad.addColorStop(0.3, 'rgba(255, 220, 150, 0.9)'); 
-    dopplerGrad.addColorStop(0.6, 'rgba(150, 80, 40, 0.5)');   
-    dopplerGrad.addColorStop(1, 'rgba(50, 10, 5, 0.1)');       // Receding side (Dimmest)
-    
-    x.globalCompositeOperation = 'multiply';
-    x.beginPath();
-    x.arc(0, 0, r_s * 3.8, 0, Math.PI * 2);
-    x.lineWidth = r_s * 1.8;
-    x.strokeStyle = dopplerGrad;
-    x.stroke();
-    x.globalCompositeOperation = 'source-over';
-
+    x.strokeStyle = 'rgba(255,255,255,0.95)';
+    x.lineWidth = r * 0.05;
+    x.beginPath(); x.arc(cx, cy, r * 1.05, 0, Math.PI * 2); x.stroke();
     x.restore();
+
     x.restore();
   }
 
