@@ -248,13 +248,13 @@ body::after {
 ════════════════════════════════════════════════ */
 .hex-cluster {
   display:grid;
-  grid-template-columns:repeat(3,184px);
-  grid-template-rows:repeat(3,160px);
+  grid-template-columns:repeat(3,148px);
+  grid-template-rows:repeat(3,128px);
   gap:12px 10px;
   justify-content:center;
 }
 .hx {
-  width:184px; height:160px;
+  width:148px; height:128px;
   clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
   position:relative; cursor:default;
   transition:transform .3s,filter .3s;
@@ -604,6 +604,17 @@ body::after {
   transition:border-color .3s,transform .3s;
 }
 .contact-link:hover { border-color:var(--gold); transform:translateY(-3px); }
+.mentor-card:hover,
+.falcon-card:hover,
+.tl-card:hover,
+.proj-card:hover,
+.skill-block:hover,
+.award-row:hover,
+.edu-card:hover,
+.cert-row:hover,
+.contact-link:hover {
+  background-color: rgba(224,228,248,.085);
+}
 .c-hex {
   width:40px; height:35px;
   clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
@@ -713,7 +724,7 @@ body::after {
 
         <div class="badge-row" style="margin-top:1.2rem;margin-bottom:0">
           <span class="badge bg" itemprop="address">Kuala Lumpur, Malaysia</span>
-          <span class="badge bs">Open to Singapore · Remote</span>
+          <span class="badge bs">Open to Global Remote</span>
           <span class="badge bdim">GPA 3.96 / 4.00</span>
         </div>
       </div>
@@ -726,7 +737,7 @@ body::after {
           <div class="hx hx-g"><div class="hx-in"><span class="hx-val">8+</span><span class="hx-lbl">Scholarly Works</span></div></div>
           <div class="hx hx-d"><div class="hx-in"><span class="hx-val">50+</span><span class="hx-lbl">Projects Mentored</span></div></div>
           <div class="hx hx-g"><div class="hx-in"><span class="hx-val">3</span><span class="hx-lbl">Patents Filed</span></div></div>
-          <div class="hx hx-s"><div class="hx-in"><span class="hx-val">10mo</span><span class="hx-lbl">MSc → PhD</span></div></div>
+          <div class="hx hx-s"><div class="hx-in"><span class="hx-val">10mth</span><span class="hx-lbl">MSc → PhD</span></div></div>
           <div class="hx hx-s"><div class="hx-in"><span class="hx-val">76B</span><span class="hx-lbl">USD/Day Vol.</span></div></div>
           <div class="hx hx-g"><div class="hx-in"><span class="hx-val">3.96</span><span class="hx-lbl">GPA / 4.00</span></div></div>
           <div class="hx hx-d"><div class="hx-in"><span class="hx-val">#3</span><span class="hx-lbl">FALCON EvalAI</span></div></div>
@@ -1112,7 +1123,7 @@ body::after {
   </section>
 
   <footer class="footer">
-    <p>NG QI DING · KUALA LUMPUR, MALAYSIA · OPEN TO SINGAPORE &amp; REMOTE</p>
+    <p>NG QI DING · KUALA LUMPUR, MALAYSIA · OPEN TO &amp; GLOBAL REMOTE</p>
     <p>// Machine Learning Engineer · AI Researcher · Neuromorphic Computing · Brain-Computer Interface</p>
   </footer>
 
