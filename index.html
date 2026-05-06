@@ -68,9 +68,9 @@
   --gold-trace:  rgba(255,215,0,.055);
 
   --silver:      #E0E4F8;
-  --silver-dim:  #9AA0BC;
+  --silver-dim:  #B7BDE0;
   --silver-pale: #F4F6FF;
-  --silver-deep: #52587A;
+  --silver-deep: #7077A1;
   --silver-trace: rgba(224,228,248,.05);
 
   --cyan:        #00D4FF;
@@ -187,7 +187,7 @@ body::after {
    HERO
 ════════════════════════════════════════════════ */
 .hero { padding:4.2rem 0 3.2rem; }
-.hero-layout { display:grid; grid-template-columns:1fr 330px; gap:3.6rem; align-items:start; }
+.hero-layout { display:grid; grid-template-columns:1fr 480px; gap:4rem; align-items:start; }
 
 /* Badge strips */
 .badge-row { display:flex; flex-wrap:wrap; gap:.42rem; margin-bottom:1.2rem; }
@@ -248,20 +248,20 @@ body::after {
 ════════════════════════════════════════════════ */
 .hex-cluster {
   display:grid;
-  grid-template-columns:repeat(3,92px);
-  grid-template-rows:repeat(3,80px);
-  gap:7px 5px;
+  grid-template-columns:repeat(3,140px);
+  grid-template-rows:repeat(3,122px);
+  gap:10px 8px;
   justify-content:center;
 }
 .hx {
-  width:92px; height:80px;
+  width:140px; height:122px;
   clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
   position:relative; cursor:default;
   transition:transform .3s,filter .3s;
 }
 .hx:hover { transform:scale(1.1); filter:brightness(1.25); }
 .hx-in {
-  position:absolute; inset:2px;
+  position:absolute; inset:3px;
   clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   background:#060612;
@@ -270,15 +270,15 @@ body::after {
 .hx-s { background:linear-gradient(135deg,var(--silver),var(--silver-deep)); }
 .hx-d { background:rgba(224,228,248,.12); }
 .hx-val {
-  font-family:'Cinzel',serif; font-size:1.15rem; font-weight:700; line-height:1;
+  font-family:'Cinzel',serif; font-size:1.55rem; font-weight:700; line-height:1;
 }
 .hx-g .hx-val { color:var(--gold); }
 .hx-s .hx-val { color:var(--silver); }
 .hx-d .hx-val { color:var(--silver-dim); }
 .hx-lbl {
-  font-family:'JetBrains Mono',monospace; font-size:.47rem;
+  font-family:'JetBrains Mono',monospace; font-size:.62rem;
   letter-spacing:.07em; text-transform:uppercase; color:var(--silver-deep);
-  margin-top:.16rem; text-align:center; padding:0 6px; line-height:1.35;
+  margin-top:.2rem; text-align:center; padding:0 8px; line-height:1.4;
 }
 
 /* ════════════════════════════════════════════════
@@ -645,7 +645,10 @@ body::after {
 @media (max-width:740px) {
   .wrapper { padding:0 1.3rem 6.5rem; }
   .hero-layout { grid-template-columns:1fr; }
-  .hex-cluster { grid-template-columns:repeat(4,82px); grid-template-rows:repeat(3,72px); }
+  .hex-cluster { grid-template-columns:repeat(3,108px); grid-template-rows:repeat(3,96px); }
+  .hx { width:108px; height:96px; }
+  .hx-val { font-size:1.25rem; }
+  .hx-lbl { font-size:.54rem; }
   .mentors-grid,.edu-grid { grid-template-columns:1fr; }
   .falcon-card { grid-template-columns:1fr; gap:1.4rem; }
   .f-tags { flex-direction:row; flex-wrap:wrap; }
@@ -1125,7 +1128,7 @@ body::after {
 (function(){
   const c = document.getElementById('space-canvas');
   const x = c.getContext('2d');
-  let W, H, stars = [], dust = [], orbiters = [], shooters = [], qrings = [], stimer = 0;
+  let W, H, stars = [], dust = [], orbiters = [], shooters = [], qrings = [], stimer = 0, bhTime = 0;
   const STAR_COUNT = 420;
   const DUST_COUNT = 180;
   const ORBITER_COUNT = 180;
@@ -1259,49 +1262,72 @@ body::after {
 
   function drawBlackHole(step){
     const cx=bh.x, cy=bh.y;
+    const spin=bhTime;
 
     orbiters.forEach(o=>{
       const g=(bh.r*bh.r)/(o.r*o.r+420);
-      o.rv-=g*.06*step;
+      o.rv-=g*.065*step;
       o.r+=o.rv*step;
-      o.a+=(o.sp+g*.02)*step;
-      const inner=bh.r*1.05, outer=bh.r*3.25;
+      o.a+=(o.sp+g*.028)*step;
+      const inner=bh.r*1.05, outer=bh.r*3.35;
       if(o.r<inner){ o.r=inner; o.rv=Math.abs(o.rv)*.55; }
       if(o.r>outer){ o.r=outer; o.rv=-Math.abs(o.rv)*.55; }
 
-      const ox=cx+Math.cos(o.a)*o.r*1.26;
-      const oy=cy+Math.sin(o.a)*o.r*.58;
+      const ox=cx+Math.cos(o.a)*o.r*1.35;
+      const oy=cy+Math.sin(o.a)*o.r*.6;
       const tx=-Math.sin(o.a), ty=Math.cos(o.a);
-      const col=o.type==='gold'?'255,215,120':'210,220,255';
+      const col=o.type==='gold'?'255,215,160':'210,220,255';
       x.strokeStyle=`rgba(${col},${o.op})`;
       x.lineWidth=o.h;
       x.beginPath();
       x.moveTo(ox,oy);
-      x.lineTo(ox+tx*6,oy+ty*3);
+      x.lineTo(ox+tx*8,oy+ty*4);
       x.stroke();
     });
 
     x.save();
     x.translate(cx,cy);
-    x.rotate(.2);
-    x.scale(1.35,.55);
+    x.rotate(spin*0.9);
+    x.scale(1.6,.56);
     x.globalCompositeOperation='screen';
-    const disk=x.createRadialGradient(0,0,bh.r*.6,0,0,bh.r*3.4);
-    disk.addColorStop(0,'rgba(255,215,120,0)');
-    disk.addColorStop(.35,'rgba(255,215,120,.18)');
-    disk.addColorStop(.6,'rgba(255,210,90,.12)');
-    disk.addColorStop(1,'rgba(255,210,90,0)');
+    const disk=x.createRadialGradient(0,0,bh.r*.7,0,0,bh.r*3.8);
+    disk.addColorStop(0,'rgba(255,220,160,0)');
+    disk.addColorStop(.28,'rgba(255,220,160,.12)');
+    disk.addColorStop(.52,'rgba(255,210,120,.16)');
+    disk.addColorStop(.72,'rgba(255,185,90,.12)');
+    disk.addColorStop(1,'rgba(255,170,80,0)');
     x.fillStyle=disk;
-    x.beginPath(); x.arc(0,0,bh.r*3.4,0,Math.PI*2); x.fill();
+    x.beginPath(); x.arc(0,0,bh.r*3.8,0,Math.PI*2); x.fill();
+
+    const band=x.createLinearGradient(-bh.r*4,0,bh.r*4,0);
+    band.addColorStop(0,'rgba(255,200,110,.05)');
+    band.addColorStop(.35,'rgba(255,220,150,.18)');
+    band.addColorStop(.55,'rgba(255,240,210,.32)');
+    band.addColorStop(.8,'rgba(255,210,120,.12)');
+    band.addColorStop(1,'rgba(255,190,100,.04)');
+    x.strokeStyle=band;
+    x.lineWidth=bh.r*0.22;
+    x.beginPath(); x.ellipse(0,0,bh.r*2.8,bh.r*1.05,0,0,Math.PI*2); x.stroke();
+
+    x.strokeStyle='rgba(255,245,220,.18)';
+    x.lineWidth=bh.r*0.06;
+    x.beginPath(); x.ellipse(0,0,bh.r*1.55,bh.r*0.6,0,0,Math.PI*2); x.stroke();
     x.restore();
     x.globalCompositeOperation='source-over';
 
-    const lens=x.createRadialGradient(cx,cy,bh.r*1.05,cx,cy,bh.r*3.1);
-    lens.addColorStop(0,'rgba(255,215,120,.14)');
-    lens.addColorStop(.45,'rgba(255,215,120,.08)');
-    lens.addColorStop(1,'rgba(255,215,120,0)');
-    x.fillStyle=lens;
-    x.beginPath(); x.arc(cx,cy,bh.r*3.1,0,Math.PI*2); x.fill();
+    const halo=x.createRadialGradient(cx,cy,bh.r*1.05,cx,cy,bh.r*3.5);
+    halo.addColorStop(0,'rgba(255,215,150,.14)');
+    halo.addColorStop(.55,'rgba(255,215,150,.08)');
+    halo.addColorStop(1,'rgba(255,215,150,0)');
+    x.fillStyle=halo;
+    x.beginPath(); x.arc(cx,cy,bh.r*3.5,0,Math.PI*2); x.fill();
+
+    x.strokeStyle='rgba(255,215,160,.32)';
+    x.lineWidth=1.3;
+    x.beginPath(); x.arc(cx,cy,bh.r*2.15,spin*.8,spin*.8+Math.PI*1.25); x.stroke();
+    x.strokeStyle='rgba(200,220,255,.18)';
+    x.lineWidth=1;
+    x.beginPath(); x.arc(cx,cy,bh.r*2.55,-spin*.9,-spin*.9+Math.PI*1.1); x.stroke();
 
     const core=x.createRadialGradient(cx,cy,bh.r*.2,cx,cy,bh.r);
     core.addColorStop(0,'rgba(0,0,0,1)');
@@ -1310,12 +1336,12 @@ body::after {
     x.fillStyle=core;
     x.beginPath(); x.arc(cx,cy,bh.r,0,Math.PI*2); x.fill();
 
-    x.strokeStyle='rgba(255,215,150,.3)';
-    x.lineWidth=1.2;
-    x.beginPath(); x.arc(cx,cy,bh.r*1.08,0,Math.PI*2); x.stroke();
-    x.strokeStyle='rgba(200,220,255,.16)';
-    x.lineWidth=.8;
-    x.beginPath(); x.arc(cx,cy,bh.r*1.24,0,Math.PI*2); x.stroke();
+    x.strokeStyle='rgba(255,235,200,.4)';
+    x.lineWidth=1.4;
+    x.beginPath(); x.arc(cx,cy,bh.r*1.1,0,Math.PI*2); x.stroke();
+    x.strokeStyle='rgba(255,215,150,.22)';
+    x.lineWidth=.9;
+    x.beginPath(); x.arc(cx,cy,bh.r*1.32,0,Math.PI*2); x.stroke();
   }
 
   function spawnShooter(){
@@ -1370,6 +1396,7 @@ body::after {
   function frame(ts){
     const dt=ts-last; last=ts;
     const step=Math.min(40,dt||16)/16;
+    bhTime+=dt*0.00018;
     x.clearRect(0,0,W,H);
     nebulae(); drawDust(step); drawStars(); drawBlackHole(step); drawShooters(dt); drawRings(dt);
     requestAnimationFrame(frame);
