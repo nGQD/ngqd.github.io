@@ -71,7 +71,7 @@
   --silver-dim:  #E3E8FF;
   --silver-pale: #F8FAFF;
   --silver-deep: #E9EDFF;
-  --silver-trace: rgba(224,228,248,.05);
+  --silver-trace: rgba(236,242,255,.08);
 
   --cyan:        #E2EEFF;
   --cyan-trace:  rgba(226,238,255,.08);
@@ -85,10 +85,10 @@
 
   --border-g:   rgba(255,215,0,.20);
   --border-s:   rgba(224,228,248,.10);
-  --border-c:   rgba(0,212,255,.14);
+  --border-c:   rgba(226,238,255,.14);
 
-  --text:     #E5E9FF;
-  --text-dim: rgba(229,233,255,.72);
+  --text:     #F8FAFF;
+  --text-dim: #F8FAFF;
   --white:    #F8FAFF;
 }
 
@@ -240,7 +240,7 @@ body::after {
 .hero-role .sep { color:var(--silver-deep); margin:0 .5rem; }
 
 .hero-bio { font-size:1.18rem; font-weight:400; color:var(--text-dim); max-width:640px; line-height:1.85; }
-.hero-bio strong { color:var(--silver); font-weight:600; }
+.hero-bio strong { color:var(--white); font-weight:400; }
 .hero-bio .hl { color:var(--gold-dim); font-weight:600; }
 
 /* ════════════════════════════════════════════════
@@ -330,7 +330,7 @@ body::after {
   padding:.32rem 0 .32rem 1.2rem; position:relative;
 }
 .m-facts li::before { content:'◆'; position:absolute; left:0; color:var(--gold); font-size:.42rem; top:.55rem; }
-.m-facts li strong { color:var(--silver); font-weight:600; }
+.m-facts li strong { color:var(--white); font-weight:400; }
 
 .m-tags { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:1rem; }
 .m-tag {
@@ -390,7 +390,7 @@ body::after {
 .f-comp { font-family:'Cinzel',serif; font-size:1.28rem; font-weight:700; color:var(--white); margin-bottom:.26rem; }
 .f-sub  { font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--gold); letter-spacing:.13em; text-transform:uppercase; margin-bottom:1rem; }
 .f-desc { font-size:1rem; color:var(--text-dim); line-height:1.7; }
-.f-desc strong { color:var(--silver); }
+.f-desc strong { color:var(--white); font-weight:400; }
 
 .f-tags { display:flex; flex-direction:column; gap:.45rem; flex-shrink:0; }
 .f-tag {
@@ -455,7 +455,7 @@ body::after {
 .bullets { list-style:none; }
 .bullets li { padding:.32rem 0 .32rem 1.4rem; position:relative; font-size:1rem; color:var(--text-dim); }
 .bullets li::before { content:'◆'; position:absolute; left:0; color:var(--gold); font-size:.42rem; top:.55rem; }
-.bullets li strong { color:var(--silver); font-weight:600; }
+.bullets li strong { color:var(--white); font-weight:400; }
 .bullets li .hl { color:var(--gold-dim); font-weight:600; }
 
 /* ════════════════════════════════════════════════
@@ -577,7 +577,7 @@ body::after {
 .ed-facts { list-style:none; }
 .ed-facts li { font-size:.98rem; color:var(--text-dim); padding:.22rem 0 .22rem 1rem; position:relative; }
 .ed-facts li::before { content:'·'; position:absolute; left:0; color:var(--gold-dim); font-size:1.3rem; top:-.15rem; }
-.ed-facts li strong { color:var(--silver); }
+.ed-facts li strong { color:var(--white); font-weight:400; }
 
 /* ════════════════════════════════════════════════
    CERTIFICATIONS
@@ -1303,89 +1303,155 @@ body::after {
     x.restore();
   }
 
-  function drawBlackHole(step){
-    const cx=bh.x, cy=bh.y;
-    const spin=bhTime;
-    const tilt=0.18;
 
-    orbiters.forEach(o=>{
-      const g=(bh.r*bh.r)/(o.r*o.r+420);
-      o.rv-=g*.065*step;
-      o.r+=o.rv*step;
-      o.a+=(o.sp+g*.028)*step;
-      const inner=bh.r*1.05, outer=bh.r*3.35;
-      if(o.r<inner){ o.r=inner; o.rv=Math.abs(o.rv)*.55; }
-      if(o.r>outer){ o.r=outer; o.rv=-Math.abs(o.rv)*.55; }
+  function drawBlackHole(step) {
+    // Requires bh.x, bh.y, bh.r, bhTime, and an orbiters array.
+    const cx = bh.x, cy = bh.y;
+    
+    // Slow, realistic tilt oscillation (simulating a changing viewing angle over time)
+    const tilt = 0.15 + Math.sin(bhTime * 0.02) * 0.08;
+    const spin = bhTime * 0.5;
 
-      const ox=cx+Math.cos(o.a)*o.r*1.35;
-      const oy=cy+Math.sin(o.a)*o.r*.6;
-      const tx=-Math.sin(o.a), ty=Math.cos(o.a);
-      const col=o.type==='gold'?'255,245,220':'225,235,255';
-      x.strokeStyle=`rgba(${col},${o.op})`;
-      x.lineWidth=o.h;
+    // Visual boundary representations based on the Schwarzschild radius (r_s)
+    const r_s = bh.r; 
+    const isco = r_s * 2.5; // Innermost Stable Circular Orbit approximation
+
+    x.save();
+    // 65% opacity ensures text behind or in front remains entirely readable
+    x.globalAlpha = 0.65; 
+
+    // ==========================================
+    // 1. PARTICLE PHYSICS (Pseudo-Relativistic)
+    // ==========================================
+    orbiters.forEach(o => {
+      // Gravitational acceleration approximation: a = GM/r^2
+      const gm = r_s * r_s * 60; 
+      const distSq = o.r * o.r;
+      const g = gm / distSq;
+
+      // Update radial velocity
+      o.rv -= g * 0.001 * step; 
+      o.r += o.rv * step;
+      
+      // Keplerian angular velocity with simulated frame-dragging
+      const frameDragging = (isco / o.r) * 0.02;
+      o.a += (Math.sqrt(gm / o.r) * 0.002 + frameDragging) * step;
+
+      // Relativistic decay: if a particle passes the ISCO, it spirals into the shadow
+      if (o.r < isco) {
+        o.rv -= 0.8 * step; 
+      }
+      
+      // Respawn particles that fall into the event horizon or drift too far
+      if (o.r < r_s || o.r > r_s * 7) {
+        o.r = r_s * (3.5 + Math.random() * 3.5); 
+        o.rv = 0; 
+        o.a = Math.random() * Math.PI * 2; 
+      }
+
+      // Relativistic Doppler Beaming for particles
+      // Particles moving left-to-right (towards observer) are brighter
+      const projectedVelocityX = -Math.sin(o.a);
+      const dopplerFactor = 1 + projectedVelocityX * 0.85; 
+      
+      // Elliptical projection for the flat disk perspective
+      const ox = cx + Math.cos(o.a) * o.r;
+      const oy = cy + Math.sin(o.a) * o.r * Math.sin(tilt);
+      
+      const streakX = -Math.sin(o.a) * (Math.sqrt(gm / o.r) * 0.08);
+      const streakY = Math.cos(o.a) * (Math.sqrt(gm / o.r) * 0.08) * Math.sin(tilt);
+      
+      // Apply Doppler brightness to particle opacity
+      const opacity = Math.max(0.05, Math.min(1, o.op * dopplerFactor));
+      x.strokeStyle = `rgba(255, 240, 220, ${opacity})`;
+      x.lineWidth = o.h || 1;
       x.beginPath();
-      x.moveTo(ox,oy);
-      x.lineTo(ox+tx*8,oy+ty*4);
+      x.moveTo(ox, oy);
+      x.lineTo(ox + streakX * step, oy + streakY * step);
       x.stroke();
     });
 
+    x.translate(cx, cy);
+
+    // ==========================================
+    // 2. GRAVITATIONAL LENSING (Top & Bottom Halos)
+    // ==========================================
+    // This represents the light from the back of the disk bending over the black hole
     x.save();
-    x.translate(cx,cy);
-    x.rotate(spin*0.22 + tilt);
-    x.scale(1.55,.38);
-    x.globalCompositeOperation='screen';
-    const disk=x.createRadialGradient(0,0,bh.r*.5,0,0,bh.r*2.9);
-    disk.addColorStop(0,'rgba(255,245,230,0)');
-    disk.addColorStop(.18,'rgba(255,245,230,.22)');
-    disk.addColorStop(.4,'rgba(255,230,190,.45)');
-    disk.addColorStop(.62,'rgba(255,210,150,.3)');
-    disk.addColorStop(1,'rgba(255,200,140,0)');
-    x.fillStyle=disk;
-    x.beginPath(); x.arc(0,0,bh.r*2.9,0,Math.PI*2); x.fill();
-
-    const band=x.createLinearGradient(-bh.r*4,0,bh.r*4,0);
-    band.addColorStop(0,'rgba(255,210,150,.05)');
-    band.addColorStop(.35,'rgba(255,235,190,.2)');
-    band.addColorStop(.55,'rgba(255,252,245,.75)');
-    band.addColorStop(.78,'rgba(255,225,170,.2)');
-    band.addColorStop(1,'rgba(255,210,150,.06)');
-    x.strokeStyle=band;
-    x.lineWidth=bh.r*0.18;
-    x.beginPath(); x.ellipse(0,0,bh.r*2.1,bh.r*0.62,0,0,Math.PI*2); x.stroke();
-
-    x.strokeStyle='rgba(255,255,245,.35)';
-    x.lineWidth=bh.r*0.06;
-    x.beginPath(); x.ellipse(0,0,bh.r*1.25,bh.r*0.36,0,0,Math.PI*2); x.stroke();
+    x.scale(1, 1.3); // Spherical distortion
+    x.beginPath();
+    x.arc(0, 0, r_s * 1.6, 0, Math.PI * 2);
+    x.lineWidth = r_s * 0.9;
+    
+    const lensedGrad = x.createRadialGradient(0, 0, r_s * 1.1, 0, 0, r_s * 2.1);
+    lensedGrad.addColorStop(0, 'rgba(255, 230, 180, 0.85)');
+    lensedGrad.addColorStop(0.4, 'rgba(255, 180, 100, 0.4)');
+    lensedGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    x.strokeStyle = lensedGrad;
+    x.stroke();
     x.restore();
-    x.globalCompositeOperation='source-over';
 
-    const halo=x.createRadialGradient(cx,cy,bh.r*1.02,cx,cy,bh.r*2.6);
-    halo.addColorStop(0,'rgba(255,235,190,.08)');
-    halo.addColorStop(.55,'rgba(255,235,190,.04)');
-    halo.addColorStop(1,'rgba(255,235,190,0)');
-    x.fillStyle=halo;
-    x.beginPath(); x.arc(cx,cy,bh.r*2.6,0,Math.PI*2); x.fill();
+    // ==========================================
+    // 3. THE SHADOW & PHOTON RING
+    // ==========================================
+    // Clear the center to represent the actual void of the shadow
+    x.globalCompositeOperation = 'destination-out';
+    x.beginPath();
+    x.arc(0, 0, r_s, 0, Math.PI * 2);
+    x.fillStyle = `rgba(0, 0, 0, 0.9)`; 
+    x.fill();
+    x.globalCompositeOperation = 'source-over';
+    
+    // Deep shadow fill
+    x.beginPath();
+    x.arc(0, 0, r_s, 0, Math.PI * 2);
+    x.fillStyle = 'rgba(2, 2, 5, 0.9)';
+    x.fill();
 
-    x.strokeStyle='rgba(255,250,235,.5)';
-    x.lineWidth=1.4;
-    x.beginPath(); x.arc(cx,cy,bh.r*1.85,spin*.4,spin*.4+Math.PI*1.2); x.stroke();
-    x.strokeStyle='rgba(225,240,255,.25)';
-    x.lineWidth=1;
-    x.beginPath(); x.arc(cx,cy,bh.r*2.05,-spin*.45,-spin*.45+Math.PI*1.05); x.stroke();
+    // Photon Ring (Light trapped in circular orbit before escaping)
+    x.beginPath();
+    x.arc(0, 0, r_s * 1.03, 0, Math.PI * 2);
+    x.lineWidth = r_s * 0.06;
+    x.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+    x.stroke();
 
-    const core=x.createRadialGradient(cx,cy,bh.r*.2,cx,cy,bh.r);
-    core.addColorStop(0,'rgba(0,0,0,1)');
-    core.addColorStop(.7,'rgba(2,2,8,.96)');
-    core.addColorStop(1,'rgba(8,10,20,1)');
-    x.fillStyle=core;
-    x.beginPath(); x.arc(cx,cy,bh.r,0,Math.PI*2); x.fill();
+    // ==========================================
+    // 4. ACCRETION DISK & DOPPLER BEAMING
+    // ==========================================
+    x.save();
+    x.rotate(-tilt * 0.3); 
+    x.scale(1, Math.sin(tilt)); // Flatten the foreground disk
+    
+    // Base radial structure of the accretion disk
+    x.beginPath();
+    x.arc(0, 0, r_s * 3.8, 0, Math.PI * 2);
+    x.lineWidth = r_s * 1.8;
+    
+    const diskRadial = x.createRadialGradient(0, 0, r_s * 1.4, 0, 0, r_s * 4.7);
+    diskRadial.addColorStop(0, 'rgba(255, 255, 255, 0)');    // Gap between ISCO and Event Horizon
+    diskRadial.addColorStop(0.1, 'rgba(255, 255, 255, 1)');  // Intensely hot inner edge
+    diskRadial.addColorStop(0.4, 'rgba(255, 210, 120, 0.8)');// Mid-disk cooling
+    diskRadial.addColorStop(1, 'rgba(80, 30, 10, 0)');       // Outer fade
+    x.strokeStyle = diskRadial;
+    x.stroke();
 
-    x.strokeStyle='rgba(255,250,235,.5)';
-    x.lineWidth=1.4;
-    x.beginPath(); x.arc(cx,cy,bh.r*1.1,0,Math.PI*2); x.stroke();
-    x.strokeStyle='rgba(255,235,200,.32)';
-    x.lineWidth=1;
-    x.beginPath(); x.arc(cx,cy,bh.r*1.32,0,Math.PI*2); x.stroke();
+    // Apply the Relativistic Doppler Beaming (Blueshift/Redshift luminosity gradient)
+    const dopplerGrad = x.createLinearGradient(-r_s * 4, 0, r_s * 4, 0);
+    dopplerGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');     // Approaching side (Brightest)
+    dopplerGrad.addColorStop(0.3, 'rgba(255, 220, 150, 0.9)'); 
+    dopplerGrad.addColorStop(0.6, 'rgba(150, 80, 40, 0.5)');   
+    dopplerGrad.addColorStop(1, 'rgba(50, 10, 5, 0.1)');       // Receding side (Dimmest)
+    
+    x.globalCompositeOperation = 'multiply';
+    x.beginPath();
+    x.arc(0, 0, r_s * 3.8, 0, Math.PI * 2);
+    x.lineWidth = r_s * 1.8;
+    x.strokeStyle = dopplerGrad;
+    x.stroke();
+    x.globalCompositeOperation = 'source-over';
+
+    x.restore();
+    x.restore();
   }
 
   function spawnShooter(){
